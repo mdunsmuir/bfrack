@@ -11,6 +11,11 @@ int main(int argc, char **argv)
   char program[PROGLEN];
   unsigned int data_ptr = 0, prog_ptr = 0, bcount = 0;
 
+  if(argc != 2){
+    puts("usage: bfrack <brainfuck script>");
+    return 0;
+  }
+
   /*
     read script from file
   */
@@ -31,8 +36,6 @@ int main(int argc, char **argv)
   for(data_ptr = 0; data_ptr < TAPELEN; data_ptr++){
     tape[data_ptr] = 0;
   }; data_ptr = 0;
-  
-  //  puts("done reading script, executing...");
 
   /*
     execute program
@@ -65,7 +68,7 @@ int main(int argc, char **argv)
       printf("%c", tape[data_ptr]);
       break;
     case ',':
-      tape[data_ptr] = getchar();
+      tape[data_ptr] = (char)getc(stdin);
       break;
     case '[':
       if(tape[data_ptr] == 0){
