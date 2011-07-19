@@ -19,7 +19,7 @@ def getjump(iprog, prog, fbracks, bbracks):
         return iprog
 
 if len(sys.argv) != 2:
-    raise Exception("USAGE: pfrack.py <source file>")
+    raise Exception("USAGE: pfrack <source file>")
 
 # read program
 source_file = open(sys.argv[1])
