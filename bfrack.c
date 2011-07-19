@@ -53,7 +53,7 @@ int main(int argc, char **argv)
       break;
     case '<':
       data_ptr--;
-      if(data_ptr <= 0){
+      if(data_ptr < 0){
 	puts("error -- off left end of tape!");
 	return 0;
       }
