@@ -1,0 +1,65 @@
+#!/usr/bin/python
+
+import sys
+
+DATA_LEN = 30000 # length of data tape
+
+def getjump(iprog, prog, fbracks, bbracks):
+    try :
+        return fbracks[iprog]
+    except KeyError: # we haven't been here yet
+        bcount = 1
+        iopen = iprog
+        while prog[iprog] != ']':
+            iprog += 1
+            if prog[iprog] == '[':
+                iprog = getjump(iprog, prog, fbracks, bbracks) + 1
+        fbracks[iopen] = iprog
+        bbracks[iprog] = iopen
+        return iprog
+
+if len(sys.argv) != 2:
+    raise Exception("USAGE: pfrack.py <source file>")
+
+# read program
+source_file = open(sys.argv[1])
+raw_prog = source_file.read()
+
+# program tape and counter
+prog = raw_prog.replace("/n", "")
+iprog = 0
+
+# data tape and counter
+data = [0] * 30000
+idata = 0
+
+# figure out loops ahead of time
+fbracks = {}
+bbracks = {}
+
+while iprog < len(prog):
+    pchar = prog[iprog]
+    if pchar == '>': # data ptr right
+        idata += 1
+        if idata == DATA_LEN:
+            raise Exception("error -- data pointer ran off end of tape!")
+    elif pchar == '<': # data ptr left
+        idata -= 1
+        if idata < 0:
+            raise Exception("error -- data pointer ran off start of tape!")
+    elif pchar == '+': # data incr
+        data[idata] += 1
+    elif pchar == '-': # data decr
+        data[idata] -= 1
+    elif pchar == '.': # data print
+        sys.stdout.write(chr(data[idata]))
+        sys.stdout.flush()
+    elif pchar == ',': # data read
+        data[idata] = ord(sys.stdin.read(1))
+    elif pchar == '[': # open loop
+        jump = getjump(iprog, prog, fbracks, bbracks)
+        if data[idata] == 0:
+            iprog = jump
+    elif pchar == ']' and data[idata] != 0: 
+        iprog = bbracks[iprog]
+    iprog += 1

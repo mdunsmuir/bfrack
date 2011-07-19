@@ -47,14 +47,14 @@ int main(int argc, char **argv)
     case '>':
       data_ptr++;
       if(data_ptr >= TAPELEN){
-	puts("error -- off left end of tape!");
+	puts("error -- off right end of tape!");
 	return 0;
       }
       break;
     case '<':
       data_ptr--;
-      if(data_ptr >= TAPELEN){
-	puts("error -- off right end of tape!");
+      if(data_ptr <= 0){
+	puts("error -- off left end of tape!");
 	return 0;
       }
       break;
