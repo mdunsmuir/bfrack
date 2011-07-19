@@ -30,7 +30,7 @@ prog = raw_prog.replace("/n", "")
 iprog = 0
 
 # data tape and counter
-data = [0] * 30000
+data = [0] * DATA_LEN
 idata = 0
 
 # figure out loops ahead of time
