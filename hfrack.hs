@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
+import System.Environment
 import qualified Data.ByteString as B
 import qualified Data.Vector as V
 import qualified Data.Vector.Mutable as MV
@@ -13,11 +14,23 @@ instance Exception MismatchedBracesException
 
 data MapIndex = Index Int | None deriving Show
 
-initSize = 10000
+initSize = 30000
+
+main = do
+  args <- getArgs
+  if length args /= 1
+    then putStrLn "gotta give a filename"
+    else do prog <- readFile $ head args
+            stringBF prog
+
+stringBF :: String -> IO ()
+stringBF prog = do
+  let vProg = V.fromList $ map charToWord prog
+  brainfuck vProg
 
 brainfuck :: V.Vector Word8 -> IO ()
 brainfuck prog = do
-  tape <- MV.new initSize
+  tape <- MV.replicate initSize 0
   progMap <- mapProg prog
   runBF tape prog 0 0 progMap
 
@@ -25,8 +38,8 @@ runBF tape prog iTape iProg progMap
   | iProg == V.length prog = return () 
   | otherwise = case prog V.! iProg of
 
-                  60 -> runBF tape prog (iTape - 1) iProg progMap -- <
-                  62 -> runBF tape prog (iTape + 1) iProg progMap -- > 
+                  60 -> runBF tape prog (iTape - 1) (iProg + 1) progMap -- <
+                  62 -> runBF tape prog (iTape + 1) (iProg + 1) progMap -- > 
 
                   43 -> tapeOper (+1) -- +
                   45 -> let sub y x = x - y
@@ -34,23 +47,25 @@ runBF tape prog iTape iProg progMap
 
                   46 -> do byte <- MV.read tape iTape -- .
                            putChar $ wordToChar byte
-                           runBF tape prog iTape iProg progMap
+                           runBF tape prog iTape (iProg + 1) progMap
 
                   91 -> do byte <- MV.read tape iTape
                            case byte of
-                             1 -> let newIProg = case progMap V.! iProg of Index i -> i
+                             0 -> let newIProg = case progMap V.! iProg of Index i -> i
                                   in  runBF tape prog iTape newIProg progMap
                              _ -> runBF tape prog iTape (iProg + 1) progMap
 
                   93 -> do byte <- MV.read tape iTape
                            case byte of
-                             1 -> let newIProg = case progMap V.! iProg of Index i -> i
+                             0 -> runBF tape prog iTape (iProg + 1) progMap
+                             _ -> let newIProg = case progMap V.! iProg of Index i -> i
                                   in  runBF tape prog iTape newIProg progMap
-                             _ -> runBF tape prog iTape (iProg + 1) progMap
+
+                  _ -> runBF tape prog iTape (iProg + 1) progMap
                   
   where tapeOper oper = do curVal <- MV.read tape iTape
                            MV.write tape iTape (oper curVal)
-                           runBF tape prog iTape iProg progMap
+                           runBF tape prog iTape (iProg + 1) progMap
 
 -- map stuff
 
@@ -87,7 +102,7 @@ mapProg prog
       | progVal == 93 && null bStack = throwIO MismatchedBracesException
 
       | otherwise = case progVal of
-                      91 -> mapProgBackwards map' prog (iProg + 1) (Index iProg : bStack)
+                      91 -> mapProgBackwards map' prog (iProg + 1) (Index (iProg + 1) : bStack)
                       93 -> let (bi:bis) = bStack
                             in  MV.write map' iProg bi >> 
                                   mapProgBackwards map' prog (iProg + 1) bis
@@ -100,6 +115,6 @@ mapProg prog
       | iMap == MV.length map' = return ()
       | otherwise = do mapVal <- MV.read map' iMap
                        case mapVal of 
-                         Index i -> MV.write map' i (Index iMap)
+                         Index i -> MV.write map' (i - 1) (Index (iMap + 1))
                          _ -> return ()
                        mapProgForwards map' (iMap + 1)
