@@ -2,8 +2,9 @@ module Parser (
   ParseState (..),
   Parser (..),
   noParse,
+  maybeParse,
   equals, charsSatisfying,
-  letters, numbers, spaces,
+  letters, numbers, spaces, chompSpaces,
   try, (<|>)
 ) where
 
@@ -49,11 +50,26 @@ charsSatisfying f = do
     then noParse
     else put remain >> return match
 
+maybeParse :: Parser a -> Parser (Maybe a)
+maybeParse parser = do
+  initial <- get
+  case parse parser initial of
+    ParseState (result, remain) -> do put remain
+                                      return $ Just result
+    NoParse -> return Nothing
+
 letters = charsSatisfying isLetter
 numbers = charsSatisfying isDigit
-spaces = charsSatisfying (\c -> c == ' ')
+spaces = charsSatisfying isSpace
+
+chompSpaces = do
+  str <- get
+  let (_, remain) = span isSpace str
+  put remain
 
 try p = liftM Just p <|> return Nothing
+
+infixl 7 <|>
 
 (<|>) :: Parser a -> Parser a -> Parser a
 p1 <|> p2 = do
