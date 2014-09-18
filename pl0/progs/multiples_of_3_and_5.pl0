@@ -1,0 +1,30 @@
+VAR i, sum, divisor, modresult, checkdiv;
+
+PROCEDURE modulo;
+VAR quot;
+
+BEGIN
+  quot := i / divisor;
+  modresult := i - divisor * quot
+END;
+
+BEGIN
+  i := 3;
+  sum := 0;
+
+  WHILE i < 1000 DO
+  BEGIN
+    divisor := 3;
+    CALL modulo;
+    IF modresult = 0 THEN sum := sum + i;
+    IF modresult # 0 THEN
+    BEGIN
+      divisor := 5;
+      CALL modulo;
+      IF modresult = 0 THEN sum := sum + i
+    END;
+    i := i + 1
+  END;
+
+  ! sum 
+END.

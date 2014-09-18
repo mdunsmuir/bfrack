@@ -1,0 +1,26 @@
+CONST limit = 4000000, divisor = 2;
+VAR i, ii, temp, sum, modresult;
+
+PROCEDURE modulo;
+VAR quot;
+
+BEGIN
+  quot := ii / divisor;
+  modresult := ii - divisor * quot
+END;
+
+BEGIN
+  sum := 0;
+  i := 1;
+  ii := 1;
+  WHILE ii <= limit DO
+  BEGIN
+    temp := i + ii;
+    i := ii;
+    ii := temp;
+    CALL modulo;
+    IF modresult = 0 THEN sum := sum + ii
+  END;
+  ! sum
+END.
+    
