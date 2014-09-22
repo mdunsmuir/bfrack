@@ -9,5 +9,5 @@ main = do
     then putStrLn "gotta give a filename"
     else do code <- readFile $ head args
             case parse parseProgram code of
-              ParseState (ast, _) -> run ast
-              NoParse -> putStrLn "parse failed!"
+              ParseResult ast _ -> run ast
+              NoParse _ -> putStrLn "parse failed!"

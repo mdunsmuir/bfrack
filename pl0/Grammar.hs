@@ -3,7 +3,6 @@ module Grammar where
 import Parser
 import Control.Monad
 import Data.List
-import Data.Digits
 
 type Oper = String
 
